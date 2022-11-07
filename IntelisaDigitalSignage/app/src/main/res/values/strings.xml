@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Intelisa Digital Signage</string>
+    <string name="app_version_dialog">A new version of the app is available. Do you want to update it now?
+    </string>
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancel</string>
+
+</resources>
