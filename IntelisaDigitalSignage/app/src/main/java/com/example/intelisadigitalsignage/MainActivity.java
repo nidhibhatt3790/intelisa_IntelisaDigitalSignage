@@ -176,8 +176,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
 
-                       // getDeviceIP(GeneraredCode);
-                        getDeviceIP("URF01171");
+                        getDeviceIP(GeneraredCode);
 
 
                     }
@@ -246,8 +245,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void run() {
 
-                           // getDeviceIP(response);
-                            getDeviceIP("URF01171");
+                           getDeviceIP(response);
 
 
                         }
