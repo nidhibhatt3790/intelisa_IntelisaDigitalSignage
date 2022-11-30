@@ -42,14 +42,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-import java.util.TimeZone;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -73,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
     public static TextView tvData;
     private static final int REQUEST_WRITE_PERMISSION = 786;
     ArrayList<LiveURL> urlList = new ArrayList<LiveURL>();
-    public String MSG_111, website, storedIMEI, _id, date, ownedBy, deviceIMEI, SCREENSAVER, GeneraredCode, ID, DATE, OWNEDBY, kiosk;
+    public String MSG_111, website, storedIMEI, _id, date, ownedBy, deviceIMEI, SCREENSAVER, GeneraredCode, ID, DATE, OWNEDBY,kiosk;
     private Switch alwaysOnSwitch;
     private String currentDate;
 
@@ -86,13 +83,57 @@ public class MainActivity extends AppCompatActivity {
         currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
         Log.d("TAG CURRENT DATE IS", currentDate);
 
-        Date currentTime = Calendar.getInstance().getTime();
-        Log.d("TAG::currentTime", currentTime.toString());
+//
+//        if (flagAlwayson == 0) {
+//            MainActivity.this.startLockTask();
+//
+//        } else {
+//            MainActivity.this.stopLockTask();
+//
+//        }
 
 
         Log.d("TAG", "ONCREATE");
         tvSerialNum = (TextView) findViewById(R.id.tv_imeinum);
+       // alwaysOnSwitch = findViewById(R.id.alwaysOnSwitch);
 
+//        if (alwaysOnSwitch.isChecked()) {
+//            MainActivity.this.startLockTask();
+//        } else {
+//            MainActivity.this.stopLockTask();
+//        }
+//        alwaysOnSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+//
+//                Log.d("SWITCH BOOLEAN IS==", "" + b);
+//                if (b) {
+//                    alwaysOnSwitch.setChecked(b);
+//                    MainActivity.this.startLockTask();
+//                    Log.d("TAG", "onCheckedChanged in if: " + "IF");
+//                    KEY_ALWAYS_ON = "true";
+//
+//                } else {
+//                    alwaysOnSwitch.setChecked(b);
+//                    MainActivity.this.stopLockTask();
+//                    Log.d("TAG", "onCheckedChanged in else: " + "ELSE");
+//                    KEY_ALWAYS_ON = "false";
+//
+//
+//                }
+//            }
+//        });
+
+//        SharedPreferences sharedPref = getSharedPreferences("GetSerialNum", Context.MODE_PRIVATE);
+//        storedIMEI = sharedPref.getString("SERIALNUMBER", "");
+//        MSG_111 = sharedPref.getString("MSG_111", "");
+//        website = sharedPref.getString("websiteurl", "");
+//        String ID = sharedPref.getString("ID", "");
+//        String DATE = sharedPref.getString("DATE", "");
+//        String OWNEDBY = sharedPref.getString("OWNEDBY", "");
+//        SCREENSAVER = sharedPref.getString("SCREENSAVER", "");
+//
+//        Log.d("STORED IMEI==", storedIMEI);
 
         GeneraredCode = SharePreferenceManager.getInstance().getSharePreference().getString("GeneratedCode", "");
         storedIMEI = SharePreferenceManager.getInstance().getSharePreference().getString("SERIALNUMBER", "");
@@ -110,11 +151,18 @@ public class MainActivity extends AppCompatActivity {
 
 
             tvSerialNum.setText("Verification code for setup \n " + storedIMEI);
-
+//            new Handler().postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    getDeviceIP(storedIMEI);
+//                }
+//            }, 3600);//your time
             Timer timer = new Timer(new Runnable() {
                 @Override
                 public void run() {
 
+                    // getDeviceIP(storedIMEI);
+                   //  Toast.makeText(MainActivity.this, "IN TIMER" + storedIMEI, Toast.LENGTH_LONG).show();
 
                     getScheduler(ID, DATE, OWNEDBY, SCREENSAVER, msg, "", "");
 
@@ -128,7 +176,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
 
-                        getDeviceIP(GeneraredCode);
+                       // getDeviceIP(GeneraredCode);
+                        getDeviceIP("URF01171");
 
 
                     }
@@ -146,7 +195,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    void saveSerialNumber(String serialnum, String id, String date, String ownedby, String screenSaver, String kiosk) {
+    void saveSerialNumber(String serialnum, String id, String date, String ownedby, String screenSaver,String kiosk) {
+//        SharedPreferences sharedPref = getSharedPreferences("GetSerialNum", Context.MODE_PRIVATE);
+//        SharedPreferences.Editor editor = sharedPref.edit();
+//        editor.putString("SERIALNUMBER", serialnum);
+//
+//        editor.commit();
 
         SharedPreferences.Editor editor = SharePreferenceManager.getInstance().getEditor();
         editor.putString("SERIALNUMBER", serialnum);
@@ -192,7 +246,8 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void run() {
 
-                            getDeviceIP(response);
+                           // getDeviceIP(response);
+                            getDeviceIP("URF01171");
 
 
                         }
@@ -235,21 +290,24 @@ public class MainActivity extends AppCompatActivity {
                     date = json.getString("scheduleChangeDate");
                     ownedBy = json.getString("ownedBy");
                     deviceIMEI = json.getString("deviceIMEI");
-                    kiosk = json.getString("kiosk");
 
-                    Log.d("TAGKIOSKVALIS:", kiosk);
+                    if(kiosk != null) {
+                        kiosk = json.getString("kiosk");
+
+                        Log.d("TAGKIOSKVALIS:", kiosk);
+                    }
 
                     if (json.has("screenSaver")) {
                         String screenSaver = json.getString("screenSaver");
                         Log.d("SCREENSAVER::", screenSaver);
                         getAppVersion(_id, date, ownedBy, screenSaver);
-                        saveSerialNumber(deviceIMEI, _id, date, ownedBy, screenSaver, kiosk);
+                        saveSerialNumber(deviceIMEI, _id, date, ownedBy, screenSaver,kiosk);
 
 
                     } else {
                         String screenSaver = "@drawable/img_ss";
                         getAppVersion(_id, date, ownedBy, screenSaver);
-                        saveSerialNumber(deviceIMEI, _id, date, ownedBy, screenSaver, kiosk);
+                        saveSerialNumber(deviceIMEI, _id, date, ownedBy, screenSaver,kiosk);
 
                     }
 
@@ -377,7 +435,7 @@ public class MainActivity extends AppCompatActivity {
                 //Utils.dismissProgress();
                 try {
                     String response = body.body().string();
-                    String adName, adDate, todayDate, adGroup;
+                    String adName, adDate, todayDate;
 
                     Log.d("TAGSCHEDULER", "onSuccess scheduler: " + response);
 
@@ -397,6 +455,14 @@ public class MainActivity extends AppCompatActivity {
                         todayDate = currentDate;
                     }
 
+//                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:sssZ", Locale.ENGLISH);
+//                    Date dateObj = sdf.parse(adDate);
+//                    SimpleDat
+//                    eFormat postFormater = new SimpleDateFormat("yyyy MM, dd");
+//
+//                    String newDateStr = postFormater.format(dateObj);
+
+                    // Log.d("NEW DATE IS==",newDateStr);
                     JSONArray jsonArray = schedule.getJSONArray("roundRobin");
 
                     if (jsonArray.length() > 0) {
@@ -407,17 +473,9 @@ public class MainActivity extends AppCompatActivity {
                             //Log.d("TAG", " roundRobin: " + roundRobin);
 
                             String iteration = roundRobin.getString("iteration");
-                            adGroup = roundRobin.getString("adGroup");
-                            Log.d("TAG:IN MAIN ACTIVITY:ADGROUP", adGroup);
-
+                            String adGroup = roundRobin.getString("adGroup");
                             adName = roundRobin.getString("adName");
 
-                            SharedPreferences.Editor editor1 = SharePreferenceManager.getInstance().getEditor();
-                            editor1.putString("id", _id);
-                            editor1.putString("adName", adName);
-                            editor1.putString("adGroup", adGroup);
-                            editor1.putString("adDate", adDate);
-                            editor1.commit();
 
                             if (adName != null) {
 
@@ -429,22 +487,14 @@ public class MainActivity extends AppCompatActivity {
                             }
 
                             if (adName.contains("https")) {
-
-                                if (adName.contains(".mp3") || adName.contains("www.youtube.com")) {
-                                    Log.d("TAG:not a live url",adName);
-                                } else {
-                                    urlList.add(new LiveURL(iteration, adName));
-                                }
+                                urlList.add(new LiveURL(iteration, adName));
                             }
-
 
                             Intent intent = new Intent(MainActivity.this, WebsiteActivity.class);
                             intent.putExtra("MSG_111", msg);
                             intent.putExtra("_id", _id);
                             intent.putExtra("websiteurl", adName);
-                            intent.putExtra("adGroup", adGroup);
                             intent.putExtra("DATE", todayDate);
-                            intent.putExtra("DATENOFORMAT", adDate);
                             intent.putExtra("ownedby", ownedby);
                             intent.putExtra("screensaver", screenSaver);
                             intent.putExtra("newVersion", AppNewVersion);
@@ -536,6 +586,16 @@ public class MainActivity extends AppCompatActivity {
         Log.d("TAG", "RESUME storedIMEI" + storedIMEI);
         Log.d("TAG", "RESUME GENERATED CODE" + GeneraredCode);
 
+        // _id = sharedPref.getString("ID", "");
+        // date = sharedPref.getString("DATE", "");
+        // ownedBy = sharedPref.getString("OWNEDBY", "");
+        //SCREENSAVER = sharedPref.getString("SCREENSAVER", "");
+
+//        if (KEY_ALWAYS_ON.equals("true")) {
+//            alwaysOnSwitch.setChecked(true);
+//        } else {
+//            alwaysOnSwitch.setChecked(false);
+//        }
 
         if (storedIMEI != "") {
 
@@ -564,6 +624,46 @@ public class MainActivity extends AppCompatActivity {
     protected void onRestart() {
         super.onRestart();
         Log.d("TAG", "ON RESTART");
+//        SharedPreferences sharedPref = getSharedPreferences("GetSerialNum", Context.MODE_PRIVATE);
+//        website = sharedPref.getString("website", "");
+//        msg = sharedPref.getString("MSG_111", "");
+//        storedIMEI = sharedPref.getString("SERIALNUMBER", "");
+//        Log.d("TAG", "storedIMEI" + storedIMEI);
+//        _id = sharedPref.getString("ID", "");
+//        date = sharedPref.getString("DATE", "");
+//        ownedBy = sharedPref.getString("OWNEDBY", "");
+//        SCREENSAVER = sharedPref.getString("SCREENSAVER", "");
+//
+//
+//        if (storedIMEI != "") {
+//
+//
+//            Intent intent = new Intent(this, WebsiteActivity.class);
+//            intent.putExtra("MSG_111", msg);
+//            intent.putExtra("_id", _id);
+//            intent.putExtra("websiteurl", website);
+//            intent.putExtra("DATE", date);
+//            intent.putExtra("ownedby", ownedBy);
+//            intent.putExtra("screensaver", SCREENSAVER);
+//            intent.putExtra("newVersion", "");
+//            intent.putExtra("currentVersion", "");
+//            // intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT | Intent.FLAG_ACTIVITY_NEW_TASK);
+//            this.startActivity(intent);
+//
+//        } else {
+//            Log.d("TAG", "ON RESUME IMEI" + storedIMEI);
+//
+//        }
+//        if (storedIMEI.equals(null)) {
+//            storedIMEI = "";
+//        }
+
+
+//        if (KEY_ALWAYS_ON.equals("true")) {
+//            alwaysOnSwitch.setChecked(true);
+//        } else {
+//            alwaysOnSwitch.setChecked(false);
+//        }
 
     }
 
@@ -662,7 +762,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Download error: " + file_url, Toast.LENGTH_LONG).show();
                 //   = "NotComplete";
             } else {
-                Toast.makeText(MainActivity.this, "File downloaded", Toast.LENGTH_SHORT).show();
+               Toast.makeText(MainActivity.this, "File downloaded", Toast.LENGTH_SHORT).show();
                 // = "complete";
 
 
