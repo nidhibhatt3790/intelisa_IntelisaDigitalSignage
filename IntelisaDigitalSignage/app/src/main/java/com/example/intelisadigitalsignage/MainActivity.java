@@ -69,10 +69,10 @@ public class MainActivity extends AppCompatActivity {
     long total_tmp = 0;
     public static TextView tvData;
     private static final int REQUEST_WRITE_PERMISSION = 786;
-    ArrayList<LiveURL> urlList = new ArrayList<LiveURL>();
+    public static ArrayList<LiveURL> urlList = new ArrayList<LiveURL>();
     public String MSG_111, website, storedIMEI, _id, date, ownedBy, deviceIMEI, SCREENSAVER, GeneraredCode, ID, DATE, OWNEDBY,kiosk;
     private Switch alwaysOnSwitch;
-    private String currentDate;
+    private static String currentDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -281,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
                     if (response.equals("")) {
                         Log.d("TAG", "EMPTY RESP");
                     }
-                    Log.i("TAG", "onSuccess: " + response);
+                    Log.d("TAG:DEVICEIP", "onSuccess: " + response);
 
                     JSONObject json = new JSONObject(response);
                     _id = json.getString("_id");
@@ -289,10 +289,13 @@ public class MainActivity extends AppCompatActivity {
                     ownedBy = json.getString("ownedBy");
                     deviceIMEI = json.getString("deviceIMEI");
 
-                    if(kiosk != null) {
-                        kiosk = json.getString("kiosk");
+                    if(json.has("kiosk")) {
+                        if (kiosk != null) {
 
-                        Log.d("TAGKIOSKVALIS:", kiosk);
+                            kiosk = json.getString("kiosk");
+
+                            Log.d("TAGKIOSKVALIS:", kiosk);
+                        }
                     }
 
                     if (json.has("screenSaver")) {
@@ -335,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
                 //Utils.dismissProgress();
                 try {
                     String response = body.body().string();
-                    Log.i("TAG", "onSuccess: " + response);
+                    Log.i("TAG:", "onSuccess: " + response);
 
                     String newVersion = response;
 
@@ -360,7 +363,7 @@ public class MainActivity extends AppCompatActivity {
                                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int id) {
                                             // START THE GAME!
-                                            new DownloadFileFromURL().execute(file_url);
+                                           // new DownloadFileFromURL().execute(file_url);
                                             SharedPreferences.Editor editor = SharePreferenceManager.getInstance().getEditor();
                                             editor.putString("MSG_111", "OK");
                                             editor.commit();
@@ -422,7 +425,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void getScheduler(String _id, String date, String ownedby, String screenSaver, String msg, String AppNewVersion, String AppcurrentVersion) {
+    public void getScheduler(String _id, String date, String ownedby, String screenSaver, String msg, String AppNewVersion, String AppcurrentVersion) {
 
         RetrofitHelper retrofitHelper = new RetrofitHelper();
 
@@ -447,6 +450,7 @@ public class MainActivity extends AppCompatActivity {
                     String formattedDate = outputFormat.format(date);
 
                     Log.d("TAG", " DATE: " + formattedDate);
+
                     if (currentDate.equalsIgnoreCase(formattedDate)) {
                         todayDate = adDate;
                     } else {
@@ -473,6 +477,18 @@ public class MainActivity extends AppCompatActivity {
                             String iteration = roundRobin.getString("iteration");
                             String adGroup = roundRobin.getString("adGroup");
                             adName = roundRobin.getString("adName");
+
+
+                            Log.d("TAG:IN MAIN ACTIVITY:ADGROUP", adGroup);
+
+                            adName = roundRobin.getString("adName");
+
+                            SharedPreferences.Editor editor1 = SharePreferenceManager.getInstance().getEditor();
+                            editor1.putString("id", _id);
+                            editor1.putString("adName", adName);
+                            editor1.putString("adGroup", adGroup);
+                            editor1.putString("adDate", adDate);
+                            editor1.commit();
 
 
                             if (adName != null) {

@@ -2,25 +2,13 @@ package com.example.intelisadigitalsignage.utils;
 
 import com.example.intelisadigitalsignage.Activity.MyRequest;
 import com.example.intelisadigitalsignage.Activity.MyResponse;
-import com.example.intelisadigitalsignage.Activity.NowPlayingClass;
-import com.google.gson.JsonObject;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.Field;
-import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
-import retrofit2.http.Header;
 import retrofit2.http.POST;
 
 public interface Api {
@@ -54,17 +42,6 @@ public interface Api {
             @Field("screenID") String screenID,
             @Field("scheduleDate") String scheduleDate);
 
-    @FormUrlEncoded
-    @POST(URLPrefix + "savePlayReport/")
-    Call<ResponseBody> save_playVideo(
-            @Field("screenID") String screenID,
-            @Field("scheduleDate") String scheduleDate,
-            @Field("nowPlaying") NowPlayingClass jsonObject);
-
     @POST(URLPrefix + "savePlayReport/")
     Call<MyResponse> postData(@Body MyRequest body);
-
-//    }
-
-
 }

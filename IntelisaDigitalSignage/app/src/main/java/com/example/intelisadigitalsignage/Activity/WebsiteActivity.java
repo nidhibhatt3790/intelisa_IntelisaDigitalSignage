@@ -1,5 +1,7 @@
 package com.example.intelisadigitalsignage.Activity;
 
+import static com.example.intelisadigitalsignage.MainActivity.urlList;
+
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -30,7 +32,6 @@ import com.example.intelisadigitalsignage.AppState;
 import com.example.intelisadigitalsignage.LiveURL;
 import com.example.intelisadigitalsignage.MainActivity;
 import com.example.intelisadigitalsignage.R;
-import com.example.intelisadigitalsignage.Tools;
 import com.example.intelisadigitalsignage.data.Timer;
 import com.example.intelisadigitalsignage.managers.SharePreferenceManager;
 import com.example.intelisadigitalsignage.utils.RetrofitHelper;
@@ -69,7 +70,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
     private String auto, KIOSK, ID, adName;
     private String DownloadFile;
     private Boolean onResumeFlag = false;
-    private ArrayList<LiveURL> urllist;
+    public static ArrayList<LiveURL> urllist;
     private ArrayList<String> list;
     private int i;
     private int arrayIndex = 0;
@@ -91,7 +92,9 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 
         AppState.sContext = WebsiteActivity.this;
 
-        urllist = new ArrayList<>();
+         urllist = new ArrayList<>();
+
+
 
         imgScreenSaver = (ImageView) findViewById(R.id.imgScreenSaver);
 
@@ -111,20 +114,30 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
         MSG_111 = intent.getStringExtra("MSG_111");
         _id = intent.getStringExtra("_id");
         DATE = intent.getStringExtra("DATE");//FORMATTED DATE
-        //adDate = intent.getStringExtra("DATENOFORMAT");
-
         wesiteLiveUrl = intent.getStringExtra("websiteurl");
-        // adGroup = intent.getStringExtra("adGroup");
-        //adGroup = getIntent().getStringExtra("adGroup");
-
         ownedby = intent.getStringExtra("ownedby");
         screensaver = intent.getStringExtra("screensaver");
-        //urllist = intent.getStringExtra("urllist");
-        if(urllist.size()>0)
-        {
-            urllist.clear();
-        }
-        urllist = (ArrayList<LiveURL>) intent.getSerializableExtra("urllist");
+
+         urllist = (ArrayList<LiveURL>) getIntent().getSerializableExtra("urllist");
+
+
+        //Log.d("TAG:AFTER...",""+urllist.size());
+//        Timer timer = new Timer(new Runnable() {
+//            @Override
+//            public void run() {
+//
+//              //  commonApi.getScheduler(_id,DATE,ownedby,MSG_111,"","","");
+//
+//               // Log.d("TAG:AFTER MAIJ...",""+ MainActivity.urlList.size());
+//                //Log.d("TAG:AFTER MAIJ VAL..",urllist.get());
+//
+//
+//            }
+//        }, 60000, true);
+
+
+
+
         webview = (WebView) findViewById(R.id.webView);
         webview.setWebViewClient(new WebViewClient());
         webview.getSettings().setJavaScriptEnabled(true);
@@ -134,150 +147,129 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 
         Log.d("WEBSITE LIVE URL==", wesiteLiveUrl);
 
+        Log.d("WEB:URLLIST:AFTER SCHDULER",""+urlList.size());
 
         KIOSK = SharePreferenceManager.getInstance().getSharePreference().getString("KIOSK", "");
 
-        if (KIOSK != null)
-
-            if (KIOSK.equalsIgnoreCase("1")) {
-                WebsiteActivity.this.startLockTask();
-            } else {
-                WebsiteActivity.this.stopLockTask();
-
-            }
+//        if (KIOSK != null)
+//
+//            if (KIOSK.equalsIgnoreCase("1")) {
+//                WebsiteActivity.this.startLockTask();
+//            } else {
+//                WebsiteActivity.this.stopLockTask();
+//
+//            }
 
 //       NN
-        if (this.urllist != null) {
+        if (urllist != null) {
 
-            Log.d("ARRAY OF URL", String.valueOf(this.urllist));
+            if(urllist.size() >0 || (!urllist.isEmpty())) {
 
-
-            // getDeviceIP(storedIMEI);
-
-            //webview.loadUrl(urllist.get(i).getAdname());
-            Timer timer = new Timer(new Runnable() {
-                @RequiresApi(api = Build.VERSION_CODES.N)
-                @Override
-                public void run() {
-
-                    Log.d("TAGintimer::", "" + urllist.size());
-
-                    Log.d("TAG:ARRAYINDEX", "" + arrayIndex);
-                    Log.d("TAG:urllist size", "" + urllist.size());
-                    list = new ArrayList<String>(3);
-
-                    String dateStr = adDate;
-                    Log.d("TAG:", "date before parse" + dateStr);
-//                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-//                    df.setTimeZone(TimeZone.getTimeZone("UTC"));
-//                    Date date = null;
-//
-//                    try {
-//
-//                        Log.d("TAG:","IN TRY");
-//                        if (dateStr != null) {
-//
-//                            Log.d("TAG:","IN TRY IF");
-//
-//                            date = df.parse(dateStr);
-//                            df.setTimeZone(TimeZone.getDefault());
-//                            formattedDate = df.format(date);
-//
-//
-//                            Log.d("TAGFORMATTEDTIME==", formattedDate);
-//                            // list.add(0, formattedDate);//startTime
-//                            //list.add(1, adGroup);
-//
-//                        }
-//
-//
-//                    } catch (ParseException e) {
-//                        e.printStackTrace();
-//                    }
-//
-                    String DATE_FORMAT_I = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-                    String DATE_FORMAT_O = "yyyy-MM-dd'T'HH:mm a";
+                Log.d("TAG:ARRAY OF URL", String.valueOf(urlList));
 
 
-                    SimpleDateFormat formatInput = new SimpleDateFormat(DATE_FORMAT_I);
-                    SimpleDateFormat formatOutput = new SimpleDateFormat(DATE_FORMAT_O);
-                    formatOutput.setTimeZone(TimeZone.getTimeZone("UTC"));
-                    Date date = null;
-                    String dateString = null;
-                    try {
-                        date = formatInput.parse(adDate);
-                        dateString = formatOutput.format(date);
-                        Log.d("TAG:::::::", " DATE new format: " + dateString);
+                // getDeviceIP(storedIMEI);
+
+                //webview.loadUrl(urllist.get(i).getAdname());
+                Timer timer1 = new Timer(new Runnable() {
+                    @RequiresApi(api = Build.VERSION_CODES.N)
+                    @Override
+                    public void run() {
 
 
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
+                        Log.d("TAGintimer::", "" + urllist);
 
-                    Log.d("TAG::ONCREATE","ARRAYINDEX"+arrayIndex);
-                    Log.d("TAG::ONCREATE","urllist size"+urllist.size());
+                        Log.d("TAG:ARRAYINDEX", "" + arrayIndex);
+                        //Log.d("TAG:urllist size", "" + urllist.size());
+                        list = new ArrayList<String>(3);
 
-                    if (arrayIndex == urllist.size()) {
+                        String dateStr = adDate;
+                        Log.d("TAG:", "date before parse" + dateStr);
 
-                        arrayIndex = 1;
-
-                        Log.d("TAG::ONCREATE IF","ARRAYINDEX"+arrayIndex);
-                        Log.d("TAG::ONCREATE IF","urllist size"+urllist.size());
-
-                        webview.loadUrl(urllist.get(arrayIndex-1).getAdname());//5-11-22
-                        list.add(0, dateString);
-                        list.add(1, adGroup);
-                        list.add(2, urllist.get(arrayIndex-1).getAdname());//adName
-                        Log.d("TAG:ONCREATE IF", "");
-                        Log.d("TAG:ID", _id);
-                        Log.d("TAG:DATE", DATE);
+                        String DATE_FORMAT_I = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+                        String DATE_FORMAT_O = "yyyy-MM-dd'T'HH:mm a";
 
 
-                        saveAds(_id, DATE, list);
-
-
-                    }
-                    else {
-                        Log.d("TAG:LIVE URL IS==", urllist.get(arrayIndex).getAdname());
-
-                        Log.d("TAG::ONCREATE ELSE","ARRAYINDEX"+arrayIndex);
-                        Log.d("TAG::ONCREATE ELSE","urllist size"+urllist.size());
-
-                        webview.loadUrl(urllist.get(arrayIndex).getAdname());
+                        SimpleDateFormat formatInput = new SimpleDateFormat(DATE_FORMAT_I);
+                        SimpleDateFormat formatOutput = new SimpleDateFormat(DATE_FORMAT_O);
+                        formatOutput.setTimeZone(TimeZone.getTimeZone("UTC"));
+                        Date date = null;
+                        String dateString = null;
 
                         try {
+                            if(adDate != null || adDate != "")
+                            {
+                                date = formatInput.parse(adDate);
+                                dateString = formatOutput.format(date);
+                                Log.d("TAG:::::::", " DATE new format: " + dateString);
 
-                            Log.d("TAG:LIST SIZE", "" + list.size());
+                            }
 
-                            list.add(0, dateString);
-                            list.add(1, adGroup);
-                            list.add(2, urllist.get(arrayIndex).getAdname());//adName
-
-                            Log.d("TAG:ONCREATE ELSE", "");
-                            Log.d("TAG:ONCREATE", "");
-                            Log.d("TAG:ONCREATE:ID", _id);
-                            Log.d("TAG:ONCREATE:DATE", DATE);
-
-                            saveAds(_id, DATE, list);
-
-                            arrayIndex++;
-                        } catch (Exception e) {
+                        } catch (ParseException e) {
                             e.printStackTrace();
                         }
 
+                        Log.d("TAG::ONCREATE", "ARRAYINDEX" + arrayIndex);
+
+                        if (urlList != null ) {
+                            if(urlList.size() >0 || (!urlList.isEmpty())) {
+                                if (urlList.size() == 1) {
+
+                                    Log.d("TAG::arrayindex 1", ":)");
+                                    webview.loadUrl(urlList.get(arrayIndex).getAdname());//5-11-22
+                                    list.add(0, dateString);
+                                    list.add(1, adGroup);
+                                    list.add(2, urlList.get(arrayIndex).getAdname());//adName
+
+                                    saveAds(_id, DATE, list);
+
+                                    arrayIndex = 0;
+                                }
+
+
+                                if (arrayIndex == urllist.size()) {
+
+                                    arrayIndex = 0;
+
+                                    webview.loadUrl(urlList.get(arrayIndex).getAdname());
+                                    list.add(0, dateString);
+                                    list.add(1, adGroup);
+                                    list.add(2, urlList.get(arrayIndex).getAdname());//adName
+
+                                    saveAds(_id, DATE, list);
+
+                                    arrayIndex++;
+
+                                }
+                                else {
+
+                                    Log.d("TAG::arrayindex else", ":)");
+                                    webview.loadUrl(urlList.get(arrayIndex).getAdname());//5-11-22
+                                    list.add(0, dateString);
+                                    list.add(1, adGroup);
+                                    list.add(2, urlList.get(arrayIndex).getAdname());//adName
+
+                                    saveAds(_id, DATE, list);
+
+                                    arrayIndex++;
+
+
+
+                                }
+                            }
+                        }
+
+
+                        // getDeviceIP(storedIMEI);
+                        //  Toast.makeText(MainActivity.this, "IN TIMER" + storedIMEI, Toast.LENGTH_LONG).show();
+
 
                     }
+                }, 60000, true);
+            }
 
-
-                    // getDeviceIP(storedIMEI);
-                    //  Toast.makeText(MainActivity.this, "IN TIMER" + storedIMEI, Toast.LENGTH_LONG).show();
-
-
-                }
-            }, 60000, true);
-
-
-        } else {
+        }
+        else {
 
 
             webview.setVisibility(View.GONE);
@@ -297,27 +289,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 
         }
 
-//        // wesiteLiveUrl="";
-//        if (wesiteLiveUrl != null) {
-//            if (wesiteLiveUrl.contains("https")) {
-//                webview.loadUrl(wesiteLiveUrl);
-//            } else {
-//
-//                webview.setVisibility(View.GONE);
-//                imgScreenSaver.setVisibility(View.VISIBLE);
-//
-//
-//                if (screensaver.contains("@drawable/img_ss")) {
-//                    Glide.with(this).load(getImage("img_ss")).into(imgScreenSaver);
-//
-//                } else {
-//                    String path = "https://intelisa.s3.ap-south-1.amazonaws.com/" + ownedby + "/ads/" + screensaver;
-//                    Glide.with(WebsiteActivity.this).load(path).into(imgScreenSaver);
-//                }
-//
-//
-//            }
-//        }
+
     }
 
     @Override
@@ -335,102 +307,13 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
         return drawableResourceId;
     }
 
-//    private void getData(String _id, String date, String ownedby, String screenSaver) {
-//
-//        RetrofitHelper retrofitHelper = new RetrofitHelper();
-//
-//        Call<ResponseBody> call = retrofitHelper.api().get_app_version();
-//        retrofitHelper.callApi(call, new RetrofitHelper.ConnectionCallBack() {
-//            @Override
-//            public void onSuccess(Response<ResponseBody> body) {
-//                //Utils.dismissProgress();
-//                try {
-//                    String response = body.body().string();
-//                    Log.i("TAG", "onSuccess WEBSITE: " + response);
-//
-//                    String newVersion = response;
-//
-//                    PackageManager manager = WebsiteActivity.this.getPackageManager();
-//                    PackageInfo info = manager.getPackageInfo(
-//                            WebsiteActivity.this.getPackageName(), 0);
-//                    String Currentversion = info.versionName;
-//
-//                    Double BuildVersion = 0.0;
-//
-//                    try {
-//                        //  BuildVersion = Double.parseDouble(Currentversion);
-//
-//                        if (BuildVersion < Double.parseDouble(newVersion)) {
-//
-//                            AlertDialog.Builder builder =
-//                                    new AlertDialog.Builder(WebsiteActivity.this);
-//                            builder.setMessage(R.string.app_version_dialog)
-//                                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-//                                        public void onClick(DialogInterface dialog, int id) {
-//                                            // START THE GAME!
-//
-//
-//                                            new DownloadFileFromURL().execute(file_url);
-//                                            flagDownload = "updated";
-//                                            dialog.dismiss();
-//                                            // requestPermission();
-//                                        }
-//                                    })
-//                                    .setNegativeButton(R.
-//                                            string.cancel, new DialogInterface.OnClickListener() {
-//                                        public void onClick(DialogInterface dialog, int id) {
-//                                            // User cancelled the dialog
-//                                            flagDownload = "notupdated";
-//
-//                                            dialog.dismiss();
-//
-//
-//                                        }
-//                                    });
-//                            // Create the AlertDialog object and return it
-//                            builder.show();
-//                        } else {
-//                            Log.d("TAG:", "App new version not found");
-//
-//                        }
-//                        Log.i("TAG", "mynum: " + BuildVersion);
-//
-//                    } catch (NumberFormatException nfe) {
-//                        // Handle parse error.
-//                        Log.i("TAG", "BuildVersion error: " + nfe.getMessage());
-//
-//                    }
-//
-//
-//                } catch (IOException | NullPointerException | JsonSyntaxException e) {
-//                    e.printStackTrace();
-//                } catch (PackageManager.NameNotFoundException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//
-//            @Override
-//            public void onError(int code, String error) {
-//                //Utils.showAlert(activity, error);
-//                // Utils.dismissPro1gress();
-//                Log.d("Error in api call", error.toString() + code);
-//
-//                if (code == 404) {
-//
-//                } else {
-//                    Log.d("TAG:", "Ooops something went wrong");
-//                }
-//            }
-//        });
-//
-//    }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void saveAds(String _id, String date, List<String> list) {
 
-        Log.d("TAG:LIST time", list.get(0));
-        Log.d("TAG:List adname", list.get(1));
-        Log.d("TAG:lIST ADGROUP", list.get(2));
+//        Log.d("TAG:LIST time", list.get(0));
+//        Log.d("TAG:List adname", list.get(1));
+//        Log.d("TAG:lIST ADGROUP", list.get(2));
 
         Date currentDate = Calendar.getInstance().getTime();
         final SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mm a");
@@ -586,12 +469,12 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 
         Intent intent = getIntent();
 
-        if(urllist.size()>0) {
+//        if(urllist.size()>0) {
+//
+//            urllist.clear();
+//        }
 
-            urllist.clear();
-        }
-
-        urllist = (ArrayList<LiveURL>) intent.getSerializableExtra("urllist");
+        urllist = (ArrayList<LiveURL>) getIntent().getSerializableExtra("urllist");
 
 
         MSG_111 = SharePreferenceManager.getInstance().getSharePreference().getString("MSG_111", "");
@@ -688,11 +571,11 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
         }
         onResumeFlag = true;
 
-        if (this.urllist != null) {
+        if (urlList != null) {
 
-            Log.d("ARRAY OF URL", String.valueOf(this.urllist));
-            Log.d("LIVE URL IS RESUME==", this.urllist.get(i).getAdname());
-
+//            Log.d("ARRAY OF URL", String.valueOf(MainActivity.urlList));
+//            Log.d("LIVE URL IS RESUME==", MainActivity.urlList.get(i).getAdname());
+//
 
             Timer timer = new Timer(new Runnable() {
                 @RequiresApi(api = Build.VERSION_CODES.N)
@@ -713,55 +596,16 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
                     Date date = null;
                     String dateString = null;
                     try {
-                        date = formatInput.parse(adDate);
-                        dateString = formatOutput.format(date);
-                        Log.d("TAG:::::::", " DATE new format: " + dateString);
+                        if(adDate != null || adDate != "") {
+                            date = formatInput.parse(adDate);
+                            dateString = formatOutput.format(date);
+                            Log.d("TAG:::::::", " DATE new format: " + dateString);
+                        }
 
 
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
-
-
-//                    Log.d("TAG::ONRESUME ","ARRAYINDEX"+arrayIndex);
-//                    Log.d("TAG::ONRESUME ","urllist size"+urllist.size());
-//
-//                    if (arrayIndex == urllist.size()) {
-//
-//                        Log.d("TAG::ONRESUME IF","ARRAYINDEX"+arrayIndex);
-//                        Log.d("TAG::ONRESUME IF","urllist size"+urllist.size());
-//
-//                        webview.loadUrl(urllist.get(arrayIndex - 1).getAdname());
-//                        list.add(0, dateString);
-//                        list.add(1, adGroup);
-//                        list.add(2, wesiteLiveUrl);//adName
-//                        Log.d("TAG:ON RESUME IF", "");
-//                        Log.d("TAG:ID", _id);
-//                        Log.d("TAG:DATE", DATE);
-//
-//                        saveAds(_id, DATE, list);
-//                        arrayIndex = 1;
-//
-//                    }
-//                    else {
-//
-//                        Log.d("TAG::ONRESUME ELSE","ARRAYINDEX"+arrayIndex);
-//                        Log.d("TAG::ONRESUME ELSE","urllist size"+urllist.size());
-//
-//                        webview.loadUrl(urllist.get(arrayIndex).getAdname());
-//                        list.add(0, dateString);
-//                        list.add(1, adGroup);
-//                        list.add(2, wesiteLiveUrl);//adName
-//                        Log.d("TAG:ONRESUME ELSE", "");
-//                        Log.d("TAG:ID", _id);
-//                        Log.d("TAG:DATE", DATE);
-//
-//                        saveAds(_id, DATE, list);
-//                        arrayIndex++;
-//                    }
-//                    Log.d("TAG:ONRESUME", "");
-//                    Log.d("TAG:ONCREATE:ID", _id);
-//                    Log.d("TAG:ONCREATE:DATE", DATE);
 
 
                 }
