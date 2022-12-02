@@ -4,6 +4,7 @@ import static com.example.intelisadigitalsignage.MainActivity.urlList;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -36,9 +37,14 @@ import com.example.intelisadigitalsignage.data.Timer;
 import com.example.intelisadigitalsignage.managers.SharePreferenceManager;
 import com.example.intelisadigitalsignage.utils.RetrofitHelper;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
@@ -51,6 +57,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -70,8 +77,9 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
     private String auto, KIOSK, ID, adName;
     private String DownloadFile;
     private Boolean onResumeFlag = false;
-    public static ArrayList<LiveURL> urllist;
     private ArrayList<String> list;
+    public static ArrayList<LiveURL> newURLlist = new ArrayList<LiveURL>();
+
     private int i;
     private int arrayIndex = 0;
 
@@ -91,9 +99,6 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 
 
         AppState.sContext = WebsiteActivity.this;
-
-         urllist = new ArrayList<>();
-
 
 
         imgScreenSaver = (ImageView) findViewById(R.id.imgScreenSaver);
@@ -118,22 +123,8 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
         ownedby = intent.getStringExtra("ownedby");
         screensaver = intent.getStringExtra("screensaver");
 
-         urllist = (ArrayList<LiveURL>) getIntent().getSerializableExtra("urllist");
+        //urllist = (ArrayList<LiveURL>) getIntent().getSerializableExtra("urllist");
 
-
-        //Log.d("TAG:AFTER...",""+urllist.size());
-//        Timer timer = new Timer(new Runnable() {
-//            @Override
-//            public void run() {
-//
-//              //  commonApi.getScheduler(_id,DATE,ownedby,MSG_111,"","","");
-//
-//               // Log.d("TAG:AFTER MAIJ...",""+ MainActivity.urlList.size());
-//                //Log.d("TAG:AFTER MAIJ VAL..",urllist.get());
-//
-//
-//            }
-//        }, 60000, true);
 
 
 
@@ -147,7 +138,21 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 
         Log.d("WEBSITE LIVE URL==", wesiteLiveUrl);
 
-        Log.d("WEB:URLLIST:AFTER SCHDULER",""+urlList.size());
+        Timer timer = new Timer(new Runnable() {
+            @Override
+            public void run() {
+
+                // getDeviceIP(storedIMEI);
+                //  Toast.makeText(MainActivity.this, "IN TIMER" + storedIMEI, Toast.LENGTH_LONG).show();
+
+                getScheduler(_id, DATE, ownedby, screensaver, MSG_111, "", "");
+
+
+
+
+        }
+    }, 60000, true);
+
 
         KIOSK = SharePreferenceManager.getInstance().getSharePreference().getString("KIOSK", "");
 
@@ -161,133 +166,6 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 //            }
 
 //       NN
-        if (urllist != null) {
-
-            if(urllist.size() >0 || (!urllist.isEmpty())) {
-
-                Log.d("TAG:ARRAY OF URL", String.valueOf(urlList));
-
-
-                // getDeviceIP(storedIMEI);
-
-                //webview.loadUrl(urllist.get(i).getAdname());
-                Timer timer1 = new Timer(new Runnable() {
-                    @RequiresApi(api = Build.VERSION_CODES.N)
-                    @Override
-                    public void run() {
-
-
-                        Log.d("TAGintimer::", "" + urllist);
-
-                        Log.d("TAG:ARRAYINDEX", "" + arrayIndex);
-                        //Log.d("TAG:urllist size", "" + urllist.size());
-                        list = new ArrayList<String>(3);
-
-                        String dateStr = adDate;
-                        Log.d("TAG:", "date before parse" + dateStr);
-
-                        String DATE_FORMAT_I = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-                        String DATE_FORMAT_O = "yyyy-MM-dd'T'HH:mm a";
-
-
-                        SimpleDateFormat formatInput = new SimpleDateFormat(DATE_FORMAT_I);
-                        SimpleDateFormat formatOutput = new SimpleDateFormat(DATE_FORMAT_O);
-                        formatOutput.setTimeZone(TimeZone.getTimeZone("UTC"));
-                        Date date = null;
-                        String dateString = null;
-
-                        try {
-                            if(adDate != null || adDate != "")
-                            {
-                                date = formatInput.parse(adDate);
-                                dateString = formatOutput.format(date);
-                                Log.d("TAG:::::::", " DATE new format: " + dateString);
-
-                            }
-
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-
-                        Log.d("TAG::ONCREATE", "ARRAYINDEX" + arrayIndex);
-
-                        if (urlList != null ) {
-                            if(urlList.size() >0 || (!urlList.isEmpty())) {
-                                if (urlList.size() == 1) {
-
-                                    Log.d("TAG::arrayindex 1", ":)");
-                                    webview.loadUrl(urlList.get(arrayIndex).getAdname());//5-11-22
-                                    list.add(0, dateString);
-                                    list.add(1, adGroup);
-                                    list.add(2, urlList.get(arrayIndex).getAdname());//adName
-
-                                    saveAds(_id, DATE, list);
-
-                                    arrayIndex = 0;
-                                }
-
-
-                                if (arrayIndex == urllist.size()) {
-
-                                    arrayIndex = 0;
-
-                                    webview.loadUrl(urlList.get(arrayIndex).getAdname());
-                                    list.add(0, dateString);
-                                    list.add(1, adGroup);
-                                    list.add(2, urlList.get(arrayIndex).getAdname());//adName
-
-                                    saveAds(_id, DATE, list);
-
-                                    arrayIndex++;
-
-                                }
-                                else {
-
-                                    Log.d("TAG::arrayindex else", ":)");
-                                    webview.loadUrl(urlList.get(arrayIndex).getAdname());//5-11-22
-                                    list.add(0, dateString);
-                                    list.add(1, adGroup);
-                                    list.add(2, urlList.get(arrayIndex).getAdname());//adName
-
-                                    saveAds(_id, DATE, list);
-
-                                    arrayIndex++;
-
-
-
-                                }
-                            }
-                        }
-
-
-                        // getDeviceIP(storedIMEI);
-                        //  Toast.makeText(MainActivity.this, "IN TIMER" + storedIMEI, Toast.LENGTH_LONG).show();
-
-
-                    }
-                }, 60000, true);
-            }
-
-        }
-        else {
-
-
-            webview.setVisibility(View.GONE);
-            imgScreenSaver.setVisibility(View.VISIBLE);
-
-            if (screensaver.contains("@drawable/img_ss")) {
-
-                Glide.with(this).load(getImage("img_ss")).into(imgScreenSaver);
-
-            } else {
-
-                String path = "https://intelisa.s3.ap-south-1.amazonaws.com/" + ownedby + "/ads/" + screensaver;
-                Glide.with(WebsiteActivity.this).load(path).into(imgScreenSaver);
-
-            }
-
-
-        }
 
 
     }
@@ -319,14 +197,14 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
         final SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mm a");
         String time = dateFormat.format(new Date());
 
-        Log.d("TAG::currentTimeData",time);
+        Log.d("TAG::currentTimeData", time);
 
         Date todayDate = Calendar.getInstance().getTime();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         String todayString = formatter.format(todayDate);
 
 
-        Log.d("TAG::scheduleDate",todayString);
+        Log.d("TAG::scheduleDate", todayString);
 
         RetrofitHelper retrofitHelper = new RetrofitHelper();
 
@@ -340,7 +218,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
         nowPlaying.setAdGroup(list.get(1));
         request.setNowPlaying(nowPlaying);
 
-        Log.d("TAG:REQ PARAM IS::","ID IS::"+request.getScreenID()+"\n"+"sdate:"+request.getScheduleDate()+"\n"+"startTime:"+request.getNowPlaying().getStarttime()+"\n"+"adname:"+request.getNowPlaying().getAdName()+"\n"+"adGroup:"+request.getNowPlaying().getAdGroup());
+        Log.d("TAG:REQ PARAM IS::", "ID IS::" + request.getScreenID() + "\n" + "sdate:" + request.getScheduleDate() + "\n" + "startTime:" + request.getNowPlaying().getStarttime() + "\n" + "adname:" + request.getNowPlaying().getAdName() + "\n" + "adGroup:" + request.getNowPlaying().getAdGroup());
 
         Call<MyResponse> call = retrofitHelper.api().postData(request);
 
@@ -464,7 +342,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 
         AppState.sContext = WebsiteActivity.this;
 
-        urllist = new ArrayList<>();
+        //urllist = new ArrayList<>();
         Log.d("TAG", "ON RESUME");
 
         Intent intent = getIntent();
@@ -474,7 +352,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 //            urllist.clear();
 //        }
 
-        urllist = (ArrayList<LiveURL>) getIntent().getSerializableExtra("urllist");
+        //urllist = (ArrayList<LiveURL>) getIntent().getSerializableExtra("urllist");
 
 
         MSG_111 = SharePreferenceManager.getInstance().getSharePreference().getString("MSG_111", "");
@@ -531,7 +409,8 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
                     });
             // Create the AlertDialog object and return it
             builder.show();
-        } else if (MSG_111.equals("CANCEL") && DownloadFile.equals("")) {
+        }
+        else if (MSG_111.equals("CANCEL") && DownloadFile.equals("")) {
             AlertDialog.Builder builder =
 
                     new AlertDialog.Builder(WebsiteActivity.this);
@@ -596,7 +475,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
                     Date date = null;
                     String dateString = null;
                     try {
-                        if(adDate != null || adDate != "") {
+                        if (adDate != null || adDate != "") {
                             date = formatInput.parse(adDate);
                             dateString = formatOutput.format(date);
                             Log.d("TAG:::::::", " DATE new format: " + dateString);
@@ -689,6 +568,205 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
             default:
                 return null;
         }
+    }
+
+    public void getScheduler(String _id, String date, String ownedby, String screenSaver, String msg, String AppNewVersion, String AppcurrentVersion) {
+
+        RetrofitHelper retrofitHelper = new RetrofitHelper();
+
+        Call<ResponseBody> call = retrofitHelper.api().get_scheduler(_id, date);
+        retrofitHelper.callApi(call, new RetrofitHelper.ConnectionCallBack() {
+            @Override
+            public void onSuccess(Response<ResponseBody> body) {
+                //Utils.dismissProgress();
+                try {
+                    String response = body.body().string();
+                    String adName, adDate, todayDate;
+
+                    Log.d("TAG:WEB:SCHEDULER", "onSuccess scheduler: " + response);
+
+                    JSONObject json = new JSONObject(response);
+                    JSONObject schedule = json.getJSONObject("schedule");
+                    adDate = json.getString("scheduleDate");
+
+                    SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+                    SimpleDateFormat outputFormat = new SimpleDateFormat("dd-MM-yyyy");
+                    Date date = inputFormat.parse(adDate);
+                    String formattedDate = outputFormat.format(date);
+
+                    Log.d("TAG", " DATE: " + formattedDate);
+
+
+
+                    JSONArray jsonArray = schedule.getJSONArray("roundRobin");
+
+                    if (jsonArray.length() > 0) {
+
+                        for (int i = 0; i < jsonArray.length(); i++) {
+
+                            JSONObject roundRobin = jsonArray.getJSONObject(i);
+                            //Log.d("TAG", " roundRobin: " + roundRobin);
+
+                            String iteration = roundRobin.getString("iteration");
+                            String adGroup = roundRobin.getString("adGroup");
+                            adName = roundRobin.getString("adName");
+
+
+                            Log.d("TAG:IN WEB ACTIVITY:ADGROUP", adGroup);
+
+                            adName = roundRobin.getString("adName");
+
+
+                            if (adName.contains("https")) {
+                                newURLlist.add(new LiveURL(iteration, adName));
+                            }
+
+                            Log.d("WEB:URLLIST:AFTER SCHDULER", "" + newURLlist.size());
+
+                        }
+                        if (newURLlist != null) {
+
+                            if (newURLlist.size() > 0 || (!(newURLlist.isEmpty()))) {
+
+                                Log.d("TAG:ARRAY OF URL", String.valueOf(urlList));
+
+
+                                // getDeviceIP(storedIMEI);
+
+                                //webview.loadUrl(urllist.get(i).getAdname());
+                                Timer timer1 = new Timer(new Runnable() {
+                                    @RequiresApi(api = Build.VERSION_CODES.N)
+                                    @Override
+                                    public void run() {
+
+
+                                        Log.d("TAGintimer::", "" + newURLlist);
+
+                                        Log.d("TAG:ARRAYINDEX", "" + arrayIndex);
+                                        //Log.d("TAG:urllist size", "" + urllist.size());
+                                        list = new ArrayList<String>(3);
+
+                                        String dateStr = adDate;
+                                        Log.d("TAG:", "date before parse" + dateStr);
+
+                                        String DATE_FORMAT_I = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+                                        String DATE_FORMAT_O = "yyyy-MM-dd'T'HH:mm a";
+
+
+                                        SimpleDateFormat formatInput = new SimpleDateFormat(DATE_FORMAT_I);
+                                        SimpleDateFormat formatOutput = new SimpleDateFormat(DATE_FORMAT_O);
+                                        formatOutput.setTimeZone(TimeZone.getTimeZone("UTC"));
+                                        Date date = null;
+                                        String dateString = null;
+
+                                        try {
+                                            if (adDate != null || adDate != "") {
+                                                date = formatInput.parse(adDate);
+                                                dateString = formatOutput.format(date);
+                                                Log.d("TAG:::::::", " DATE new format: " + dateString);
+
+                                            }
+
+                                        } catch (ParseException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                        Log.d("TAG::ONCREATE", "ARRAYINDEX" + arrayIndex);
+
+                                        if (newURLlist != null) {
+                                            if (newURLlist.size() > 0 || (!newURLlist.isEmpty())) {
+
+                                                if (newURLlist.size() == 1) {
+
+                                                    Log.d("TAG::arrayindex 1", ":)");
+                                                    webview.loadUrl(newURLlist.get(0).getAdname());//5-11-22
+                                                    list.add(0, dateString);
+                                                    list.add(1, adGroup);
+                                                    list.add(2, newURLlist.get(0).getAdname());//adName
+
+                                                    saveAds(_id, DATE, list);
+
+                                                    arrayIndex = 0;
+                                                }
+
+
+                                                if (arrayIndex == newURLlist.size()) {
+
+                                                    arrayIndex = 0;
+
+                                                    webview.loadUrl(newURLlist.get(arrayIndex).getAdname());
+                                                    list.add(0, dateString);
+                                                    list.add(1, adGroup);
+                                                    list.add(2, newURLlist.get(arrayIndex).getAdname());//adName
+
+                                                    saveAds(_id, DATE, list);
+
+                                                    arrayIndex++;
+
+                                                } else {
+
+                                                    Log.d("TAG::arrayindex else", ":)");webview.loadUrl(newURLlist.get(arrayIndex).getAdname());//5-11-22
+                                                    list.add(0, dateString);
+                                                    list.add(1, adGroup);
+                                                    list.add(2, newURLlist.get(arrayIndex).getAdname());//adName
+
+                                                    saveAds(_id, DATE, list);
+
+                                                    arrayIndex++;
+
+
+                                                }
+                                            }
+                                        }
+
+
+                                        // getDeviceIP(storedIMEI);
+                                        //  Toast.makeText(MainActivity.this, "IN TIMER" + storedIMEI, Toast.LENGTH_LONG).show();
+
+
+                                    }
+                                }, 60000, true);
+                            }
+
+                        }
+                        else {
+
+
+                            webview.setVisibility(View.GONE);
+                            imgScreenSaver.setVisibility(View.VISIBLE);
+
+                            if (screensaver.contains("@drawable/img_ss")) {
+
+                                Glide.with(WebsiteActivity.this).load(getImage("img_ss")).into(imgScreenSaver);
+
+                            } else {
+
+                                String path = "https://intelisa.s3.ap-south-1.amazonaws.com/" + ownedby + "/ads/" + screensaver;
+                                Glide.with(WebsiteActivity.this).load(path).into(imgScreenSaver);
+
+                            }
+
+
+                        }
+
+                    } else {
+                        // Toast.makeText(MainActivity.this, "ROUND ROBIN BLANK" + file_url, Toast.LENGTH_LONG).show();
+                    }
+
+                } catch (IOException | JSONException | ParseException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+            @Override
+            public void onError(int code, String error) {
+                Log.d("TAG", "onError scheduler: " + error.toString());
+
+            }
+        });
+
+
     }
 
 
