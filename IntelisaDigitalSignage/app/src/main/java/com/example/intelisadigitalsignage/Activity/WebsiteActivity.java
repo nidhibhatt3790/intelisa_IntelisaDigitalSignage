@@ -133,7 +133,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
         webview.setWebViewClient(new WebViewClient());
         webview.getSettings().setJavaScriptEnabled(true);
         webview.getSettings().setDomStorageEnabled(true);
-        webview.setBackgroundColor(Color.TRANSPARENT);
+        webview.setBackgroundColor(Color.WHITE);
 
 
         Log.d("WEBSITE LIVE URL==", wesiteLiveUrl);
@@ -234,6 +234,50 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
             }
         });
     }
+//    public class loadWebsiteView extends AsyncTask<String, String, String> {
+//
+//
+//        /**
+//         * Before starting background thread Show Progress Bar Dialog
+//         */
+//
+//        @Override
+//        protected void onPreExecute() {
+//            super.onPreExecute();
+//            //showDialog(progress_bar_type);
+//            imgScreenSaver.setVisibility(View.VISIBLE);
+//        }
+//
+//        /**
+//         * Downloading file in background thread
+//         */
+//        @Override
+//        protected String doInBackground(String... f_url) {
+//
+//           return null;
+//        }
+//
+//        /**
+//         * Updating progress bar
+//         */
+//        protected void onProgressUpdate(String... progress) {
+//            // setting progress percentage
+//            //pDialog.setProgress(Integer.parseInt(progress[0]));
+//
+//        }
+//
+//        /**
+//         * After completing background task Dismiss the progress dialog
+//         **/
+//        @Override
+//        protected void onPostExecute(String file_url) {
+//            // dismiss the dialog after the file was downloaded
+//            //removeDialog(progress_bar_type);
+//            imgScreenSaver.setVisibility(View.GONE);
+//
+//        }
+//
+//    }
 
 
     public class DownloadFileFromURL extends AsyncTask<String, String, String> {
@@ -450,67 +494,68 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
         }
         onResumeFlag = true;
 
-        if (urlList != null) {
-
-//            Log.d("ARRAY OF URL", String.valueOf(MainActivity.urlList));
-//            Log.d("LIVE URL IS RESUME==", MainActivity.urlList.get(i).getAdname());
+//        if (urlList != null) {
 //
-
-            Timer timer = new Timer(new Runnable() {
-                @RequiresApi(api = Build.VERSION_CODES.N)
-                @Override
-                public void run() {
-
-                    list = new ArrayList<String>(3);
-                    String dateStr = adDate;
-                    Log.d("TAG:RESUME", "date before parse" + dateStr);
-
-                    String DATE_FORMAT_I = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-                    String DATE_FORMAT_O = "yyyy-MM-dd'T'HH:mm a";
-
-
-                    SimpleDateFormat formatInput = new SimpleDateFormat(DATE_FORMAT_I);
-                    SimpleDateFormat formatOutput = new SimpleDateFormat(DATE_FORMAT_O);
-                    formatOutput.setTimeZone(TimeZone.getTimeZone("UTC"));
-                    Date date = null;
-                    String dateString = null;
-                    try {
-                        if (adDate != null || adDate != "") {
-                            date = formatInput.parse(adDate);
-                            dateString = formatOutput.format(date);
-                            Log.d("TAG:::::::", " DATE new format: " + dateString);
-                        }
-
-
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-
-
-                }
-
-            }, 60000, true);
-
-
-            // getDeviceIP(storedIMEI);
-
-
-        } else {
-            webview.setVisibility(View.GONE);
-            imgScreenSaver.setVisibility(View.VISIBLE);
-
-
-            if (screensaver.contains("@drawable/img_ss")) {
-                Glide.with(this).load(getImage("img_ss")).into(imgScreenSaver);
-
-
-            } else {
-                String path = "https://intelisa.s3.ap-south-1.amazonaws.com/" + ownedby + "/ads/" + screensaver;
-                Glide.with(WebsiteActivity.this).load(path).into(imgScreenSaver);
-            }
-
-
-        }
+////            Log.d("ARRAY OF URL", String.valueOf(MainActivity.urlList));
+////            Log.d("LIVE URL IS RESUME==", MainActivity.urlList.get(i).getAdname());
+////
+//
+//            Timer timer = new Timer(new Runnable() {
+//                @RequiresApi(api = Build.VERSION_CODES.N)
+//                @Override
+//                public void run() {
+//
+//                    list = new ArrayList<String>(3);
+//                    String dateStr = adDate;
+//                    Log.d("TAG:RESUME", "date before parse" + dateStr);
+//
+//                    String DATE_FORMAT_I = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+//                    String DATE_FORMAT_O = "yyyy-MM-dd'T'HH:mm a";
+//
+//
+//                    SimpleDateFormat formatInput = new SimpleDateFormat(DATE_FORMAT_I);
+//                    SimpleDateFormat formatOutput = new SimpleDateFormat(DATE_FORMAT_O);
+//                    formatOutput.setTimeZone(TimeZone.getTimeZone("UTC"));
+//                    Date date = null;
+//                    String dateString = null;
+//                    try {
+//                        if (adDate != null || adDate != "") {
+//                            date = formatInput.parse(adDate);
+//                            dateString = formatOutput.format(date);
+//                            Log.d("TAG:::::::", " DATE new format: " + dateString);
+//                        }
+//
+//
+//                    } catch (ParseException e) {
+//                        e.printStackTrace();
+//                    }
+//
+//
+//                }
+//
+//            }, 60000, true);
+//
+//
+//            // getDeviceIP(storedIMEI);
+//
+//
+//        }
+//        else {
+//            webview.setVisibility(View.GONE);
+//            imgScreenSaver.setVisibility(View.VISIBLE);
+//
+//
+//            if (screensaver.contains("@drawable/img_ss")) {
+//                Glide.with(this).load(getImage("img_ss")).into(imgScreenSaver);
+//
+//
+//            } else {
+//                String path = "https://intelisa.s3.ap-south-1.amazonaws.com/" + ownedby + "/ads/" + screensaver;
+//                Glide.with(WebsiteActivity.this).load(path).into(imgScreenSaver);
+//            }
+//
+//
+//        }
 
 
     }
@@ -582,6 +627,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
                 try {
                     String response = body.body().string();
                     String adName, adDate, todayDate;
+                    String adGroupApi="";
 
                     Log.d("TAG:WEB:SCHEDULER", "onSuccess scheduler: " + response);
 
@@ -600,6 +646,11 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 
                     JSONArray jsonArray = schedule.getJSONArray("roundRobin");
 
+                    if(newURLlist.size() >0)
+                    {
+                        newURLlist.clear();
+                    }
+
                     if (jsonArray.length() > 0) {
 
                         for (int i = 0; i < jsonArray.length(); i++) {
@@ -608,7 +659,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
                             //Log.d("TAG", " roundRobin: " + roundRobin);
 
                             String iteration = roundRobin.getString("iteration");
-                            String adGroup = roundRobin.getString("adGroup");
+                             adGroupApi = roundRobin.getString("adGroup");
                             adName = roundRobin.getString("adName");
 
 
@@ -634,6 +685,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
                                 // getDeviceIP(storedIMEI);
 
                                 //webview.loadUrl(urllist.get(i).getAdname());
+                                String finalAdGroupApi = adGroupApi;
                                 Timer timer1 = new Timer(new Runnable() {
                                     @RequiresApi(api = Build.VERSION_CODES.N)
                                     @Override
@@ -681,7 +733,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
                                                     Log.d("TAG::arrayindex 1", ":)");
                                                     webview.loadUrl(newURLlist.get(0).getAdname());//5-11-22
                                                     list.add(0, dateString);
-                                                    list.add(1, adGroup);
+                                                    list.add(1, finalAdGroupApi);
                                                     list.add(2, newURLlist.get(0).getAdname());//adName
 
                                                     saveAds(_id, DATE, list);
@@ -696,7 +748,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 
                                                     webview.loadUrl(newURLlist.get(arrayIndex).getAdname());
                                                     list.add(0, dateString);
-                                                    list.add(1, adGroup);
+                                                    list.add(1, finalAdGroupApi);
                                                     list.add(2, newURLlist.get(arrayIndex).getAdname());//adName
 
                                                     saveAds(_id, DATE, list);
@@ -707,7 +759,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 
                                                     Log.d("TAG::arrayindex else", ":)");webview.loadUrl(newURLlist.get(arrayIndex).getAdname());//5-11-22
                                                     list.add(0, dateString);
-                                                    list.add(1, adGroup);
+                                                    list.add(1, finalAdGroupApi);
                                                     list.add(2, newURLlist.get(arrayIndex).getAdname());//adName
 
                                                     saveAds(_id, DATE, list);
@@ -725,7 +777,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 
 
                                     }
-                                }, 60000, true);
+                                }, 30000, true);
                             }
 
                         }
