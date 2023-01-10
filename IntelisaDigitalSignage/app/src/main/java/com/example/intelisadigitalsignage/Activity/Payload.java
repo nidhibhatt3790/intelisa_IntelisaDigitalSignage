@@ -1,7 +1,5 @@
 package com.example.intelisadigitalsignage.Activity;
 
-import com.google.gson.annotations.SerializedName;
-
 import java.io.Serializable;
 
 public class Payload implements Serializable {

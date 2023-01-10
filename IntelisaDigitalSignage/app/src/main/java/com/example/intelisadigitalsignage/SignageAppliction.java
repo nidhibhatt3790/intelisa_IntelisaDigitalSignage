@@ -21,5 +21,4 @@ public class SignageAppliction extends Application {
 //        instance = this;
 //        super.onCreate();
 //    }
-
 }

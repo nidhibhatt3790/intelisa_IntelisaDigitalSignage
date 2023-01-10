@@ -1,15 +1,26 @@
 package com.example.intelisadigitalsignage;
 
 
-import android.annotation.SuppressLint;
-import android.os.Build;
+import android.app.Activity;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
+import android.os.Environment;
 import android.util.Log;
+import android.widget.Toast;
 
-import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import com.example.intelisadigitalsignage.Activity.WebsiteActivity;
+import com.example.intelisadigitalsignage.managers.SharePreferenceManager;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 
 public class Tools  {
     //private String DownloadFile;
@@ -48,23 +59,5 @@ public class Tools  {
 //        // Create the AlertDialog object and return it
 //        builder.show();
 //    }
-  @RequiresApi(api = Build.VERSION_CODES.N)
-  public static String DateFormatter(String DateStr)
-  {
-      SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-      SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-DD");
-      Date date = null;
-      String formattedDate = null;
-      try {
-          date = inputFormat.parse(DateStr);
-           formattedDate = outputFormat.format(date);
-          Log.d("TAG", " DATE: " + formattedDate);
 
-
-      } catch (ParseException e) {
-          e.printStackTrace();
-      }
-
-      return formattedDate;
-  }
 }

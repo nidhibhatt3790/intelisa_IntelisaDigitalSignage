@@ -4,6 +4,7 @@ import static com.example.intelisadigitalsignage.Constants.KEY_ALWAYS_ON;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -13,7 +14,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -46,7 +50,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -61,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int progress_bar_type = 0;
     public String msg;
     //public int flagAlwayson = 1;
+    private Boolean VersionDialog = false;
 
     // File url to download
     private static String file_url = "https://intelisaapk.s3.ap-south-1.amazonaws.com/Autoupdater.apk";
@@ -168,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                 }
-            }, 60000, true);
+            }, 30000, true);
         } else {
             if (GeneraredCode != "") {
                 tvSerialNum.setText("Verification code for setup \n" + GeneraredCode);
@@ -180,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                     }
-                }, 60000, true);
+                }, 10000, true);
 
             } else {
                 getSerialNumber();
@@ -248,7 +255,7 @@ public class MainActivity extends AppCompatActivity {
                            getDeviceIP(response);
 
                         }
-                    }, 60000, true);
+                    }, 10000, true);
 
 
                 } catch (IOException | NullPointerException | JsonSyntaxException e) {
@@ -292,12 +299,16 @@ public class MainActivity extends AppCompatActivity {
                     deviceIMEI = json.getString("deviceIMEI");
 
                     if(json.has("kiosk")) {
-                        if (kiosk != null) {
+
+                        Log.d("MAIN:","json has kiosk");
 
                             kiosk = json.getString("kiosk");
 
-                            Log.d("TAGKIOSKVALIS:", kiosk);
-                        }
+                            Log.d("MAIN:KIOSK", kiosk);
+
+                            SharedPreferences.Editor editor = SharePreferenceManager.getInstance().getEditor();
+                            editor.putString("KIOSK", kiosk);
+
                     }
 
                     if (json.has("screenSaver")) {
@@ -344,20 +355,31 @@ public class MainActivity extends AppCompatActivity {
 
                     String newVersion = response;
 
+                    String text = response;
+                    String trimmed = response
+                            .replaceAll("^['\"]*", "")
+                            .replaceAll("['\"]*$", "");
+                    String newVersionstr = trimmed;
+
+                    Log.d("TAG:TRIMMED", newVersionstr);
+
                     PackageManager manager = MainActivity.this.getPackageManager();
                     PackageInfo info = manager.getPackageInfo(
                             MainActivity.this.getPackageName(), 0);
                     String Currentversion = info.versionName;
 
                     Double BuildVersion = 0.0;
+                    Double NewVersion = 0.0;
 
                     try {
                         BuildVersion = Double.parseDouble(Currentversion);
+                        NewVersion = Double.parseDouble(newVersionstr);
+
 
                         Log.d("MAIN:" + " BuildVersion is==", "" + BuildVersion);
-                        Log.d("MAIN:" + "currentversion is==", "" + Currentversion);
+                        Log.d("MAIN:" + "NewVersion is==", "" + NewVersion);
 
-                        if (BuildVersion < Double.parseDouble(newVersion)) {
+                        if ((BuildVersion < NewVersion) && (VersionDialog == false)) {
 
                             AlertDialog.Builder builder =
                                     new AlertDialog.Builder(MainActivity.this);
@@ -392,8 +414,15 @@ public class MainActivity extends AppCompatActivity {
                                     });
                             // Create the AlertDialog object and return it
                             builder.show();
+                            VersionDialog = true;
+
                         } else {
-                            Log.d("MAIN:", "App new version not found");
+
+
+                            Log.d("MAIN:", "App new version already downloaded");
+
+                            Toast.makeText(getApplicationContext(),"New Version Downloaded",Toast.LENGTH_SHORT).show();
+
                             //getScheduler(_id, date, ownedby, screenSaver, "", "", "");
                             Timer timer = new Timer(new Runnable() {
                                 @Override
@@ -402,13 +431,14 @@ public class MainActivity extends AppCompatActivity {
                                     // getDeviceIP(storedIMEI);
                                     //  Toast.makeText(MainActivity.this, "IN TIMER" + storedIMEI, Toast.LENGTH_LONG).show();
 
-                                    getScheduler(ID, DATE, OWNEDBY, SCREENSAVER, msg, "", "");
+                                    getScheduler(_id, date, ownedby, screenSaver, "OK", newVersion, Currentversion);
 
 
                                 }
-                            }, 60000, true);
+                            }, 30000, true);
                         }
                         Log.i("MAIN", "mynum: " + BuildVersion);
+
 
                     } catch (NumberFormatException nfe) {
                         // Handle parse error.
@@ -597,7 +627,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        Log.d("MAIN", "ON RESUME");
+//        Log.d("MAIN", "ON RESUME");
 
 
         GeneraredCode = SharePreferenceManager.getInstance().getSharePreference().getString("GeneratedCode", "");
@@ -706,6 +736,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
+
     public class DownloadFileFromURL extends AsyncTask<String, String, String> {
 
 
@@ -764,6 +796,8 @@ public class MainActivity extends AppCompatActivity {
                 // closing streams
                 output.close();
                 input.close();
+
+                Log.d("TAG:","File Downloaded");
 
             } catch (Exception e) {
                 Log.e("Error: ", e.getMessage());

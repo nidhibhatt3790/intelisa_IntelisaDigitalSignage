@@ -2,8 +2,11 @@ package com.example.intelisadigitalsignage.Activity;
 
 import static com.example.intelisadigitalsignage.MainActivity.urlList;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,6 +17,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.UserManager;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
@@ -27,11 +31,14 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
 import com.example.intelisadigitalsignage.AppState;
+import com.example.intelisadigitalsignage.DeviceAdmiReceiver;
 import com.example.intelisadigitalsignage.LiveURL;
 import com.example.intelisadigitalsignage.MainActivity;
+import com.example.intelisadigitalsignage.MyDeviceAdminReceiver;
 import com.example.intelisadigitalsignage.R;
 import com.example.intelisadigitalsignage.data.Timer;
 import com.example.intelisadigitalsignage.managers.SharePreferenceManager;
@@ -62,12 +69,14 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+
 public class WebsiteActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
+    private static final int REQUEST_CODE_MANAGE_DEVICE_ADMINS = 999;
     WebView webview;
     ImageView imgScreenSaver;
     public static String formattedDate;
-    public String _id, wesiteLiveUrl, adGroup, ownedby, screensaver, MSG_111, DATE, adDate, newVersion, currentVersion;
+    public String _id, wesiteLiveUrl, adGroup, ownedby, screensaver, MSG_111, DATE, adDate, newVersion, currentVersion, kioskVal;
     Thread thread;
     private String file_url = "https://intelisaapk.s3.ap-south-1.amazonaws.com/Autoupdater.apk";
     private ProgressDialog pDialog;
@@ -78,6 +87,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
     private String DownloadFile;
     private Boolean onResumeFlag = false;
     private ArrayList<String> list;
+    public boolean kioskdata;
     public static ArrayList<LiveURL> newURLlist = new ArrayList<LiveURL>();
 
     private int i;
@@ -90,6 +100,17 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 
             new DownloadFileFromURL().execute(file_url);
         }
+
+        if (requestCode == REQUEST_CODE_MANAGE_DEVICE_ADMINS) {
+            // Check if the permission was granted
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission was granted
+                // Do something here
+            } else {
+                // Permission was denied
+                // Do something here
+            }
+        }
     }
 
     @Override
@@ -97,8 +118,11 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_website);
 
+        Log.d("ACTIVITY:", "oncreate");
 
         AppState.sContext = WebsiteActivity.this;
+
+        setImmersive();
 
 
         imgScreenSaver = (ImageView) findViewById(R.id.imgScreenSaver);
@@ -114,6 +138,57 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
         Log.d("TAG:adDate is==", adDate);//2022-10-12T00:00:00.000Z
 
 
+
+        KIOSK = SharePreferenceManager.getInstance().getSharePreference().getString("KIOSK", "");
+
+        Log.d("WEB:kiosk", KIOSK);
+
+        if (KIOSK != null)
+
+            //KIOSK 1 = onJ
+
+            if (KIOSK.equalsIgnoreCase("1") && (kioskdata == false)) {
+
+                Log.d("TAG:","KIOSK IS 1");
+
+                DevicePolicyManager dpm = (DevicePolicyManager) getApplicationContext().getSystemService(Context.DEVICE_POLICY_SERVICE);
+                ComponentName deviceAdmin = new ComponentName(this, DeviceAdmiReceiver.class);
+
+
+                if (dpm.isAdminActive(deviceAdmin)) {
+                    // Device adm
+                    //
+                    //
+                    //
+                    // in is already active, skip activation.
+                } else {
+                    // Request device admin privileges.
+                    Intent deviceAdminIntent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+                    deviceAdminIntent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, deviceAdmin);
+                    deviceAdminIntent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Device owner privileges are needed to perform certain operations.");
+                    startActivityForResult(deviceAdminIntent, 999);
+                    WebsiteActivity.this.startLockTask();
+
+                }
+
+                //dpm.addUserRestriction(deviceAdmin, UserManager.DISALLOW_MODIFY_ACCOUNTS);
+                //dpm.addUserRestriction(deviceAdmin, UserManager.DISALLOW_CONFIG_TETHERING);
+                // dpm.setLockTaskPackages(deviceAdmin, new String[]{getPackageName()});
+
+                kioskdata = true;
+
+            } else {
+
+                Log.d("TAG:","KIOSK IS 0");
+
+                WebsiteActivity.this.stopLockTask();
+                kioskdata = false;
+
+
+            }
+
+
+
         Intent intent = getIntent();
 
         MSG_111 = intent.getStringExtra("MSG_111");
@@ -124,9 +199,6 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
         screensaver = intent.getStringExtra("screensaver");
 
         //urllist = (ArrayList<LiveURL>) getIntent().getSerializableExtra("urllist");
-
-
-
 
 
         webview = (WebView) findViewById(R.id.webView);
@@ -148,33 +220,31 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
                 getScheduler(_id, DATE, ownedby, screensaver, MSG_111, "", "");
 
 
+            }
+        }, 10000, true);
 
-
-        }
-    }, 60000, true);
-
-
-        KIOSK = SharePreferenceManager.getInstance().getSharePreference().getString("KIOSK", "");
-
-//        if (KIOSK != null)
-//
-//            if (KIOSK.equalsIgnoreCase("1")) {
-//                WebsiteActivity.this.startLockTask();
-//            } else {
-//                WebsiteActivity.this.stopLockTask();
-//
-//            }
 
 //       NN
 
 
     }
 
+
+    private void setImmersive() {
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+    }
+
     @Override
     public void onBackPressed() {
 
-        Intent i = new Intent(WebsiteActivity.this, MainActivity.class);
-        startActivity(i);
+//        Intent i = new Intent(WebsiteActivity.this, MainActivity.class);
+//        startActivity(i);
     }
 
 
@@ -289,6 +359,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 
         @Override
         protected void onPreExecute() {
+
             super.onPreExecute();
             showDialog(progress_bar_type);
         }
@@ -386,8 +457,57 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 
         AppState.sContext = WebsiteActivity.this;
 
+        KIOSK = SharePreferenceManager.getInstance().getSharePreference().getString("KIOSK", "");
+
+        Log.d("WEB:kiosk", KIOSK);
+
+        if (KIOSK != null)
+
+            //KIOSK 1 = onJ
+
+            if (KIOSK.equalsIgnoreCase("1") && (kioskdata == false)) {
+
+                Log.d("TAG:","KIOSK IS 1");
+
+                DevicePolicyManager dpm = (DevicePolicyManager) getApplicationContext().getSystemService(Context.DEVICE_POLICY_SERVICE);
+                ComponentName deviceAdmin = new ComponentName(this, DeviceAdmiReceiver.class);
+
+
+                if (dpm.isAdminActive(deviceAdmin)) {
+                    // Device adm
+                    //
+                    //
+                    //
+                    // in is already active, skip activation.
+                } else {
+                    // Request device admin privileges.
+                    Intent deviceAdminIntent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+                    deviceAdminIntent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, deviceAdmin);
+                    deviceAdminIntent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Device owner privileges are needed to perform certain operations.");
+                    startActivityForResult(deviceAdminIntent, 999);
+                    WebsiteActivity.this.startLockTask();
+
+                }
+
+                //dpm.addUserRestriction(deviceAdmin, UserManager.DISALLOW_MODIFY_ACCOUNTS);
+                //dpm.addUserRestriction(deviceAdmin, UserManager.DISALLOW_CONFIG_TETHERING);
+                // dpm.setLockTaskPackages(deviceAdmin, new String[]{getPackageName()});
+
+                kioskdata = true;
+
+            } else {
+
+                Log.d("TAG:","KIOSK IS 0");
+
+                WebsiteActivity.this.stopLockTask();
+                kioskdata = false;
+
+
+            }
+
         //urllist = new ArrayList<>();
-        Log.d("TAG", "ON RESUME");
+        Log.d("ACTIVITY", "ON RESUME");
+
 
         Intent intent = getIntent();
 
@@ -453,8 +573,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
                     });
             // Create the AlertDialog object and return it
             builder.show();
-        }
-        else if (MSG_111.equals("CANCEL") && DownloadFile.equals("")) {
+        } else if (MSG_111.equals("CANCEL") && DownloadFile.equals("")) {
             AlertDialog.Builder builder =
 
                     new AlertDialog.Builder(WebsiteActivity.this);
@@ -563,7 +682,9 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
     @Override
     protected void onStart() {
         super.onStart();
-        Log.d("TAG", "ON START");
+        Log.d("ACTIVITY:", "ON START");
+
+
     }
 
     @Override
@@ -573,11 +694,11 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 
         AppState.sContext = WebsiteActivity.this;
 
-        Intent intent = getIntent();
-        onResumeFlag = true;
+        //Intent intent = getIntent();
+        // onResumeFlag = true;
 
-        Log.d("TAG ON RESUME MSG_111::", MSG_111);
-        Log.d("DOWNLOAD FILE===", DownloadFile);
+        // Log.d("TAG ON RESUME MSG_111::", MSG_111);
+        //  Log.d("DOWNLOAD FILE===", DownloadFile);
 
 
     }
@@ -585,6 +706,8 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
     @Override
     protected void onPause() {
         super.onPause();
+
+        Log.d("ACTIVITY:", "onPause");
 
 
     }
@@ -615,6 +738,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
         }
     }
 
+
     public void getScheduler(String _id, String date, String ownedby, String screenSaver, String msg, String AppNewVersion, String AppcurrentVersion) {
 
         RetrofitHelper retrofitHelper = new RetrofitHelper();
@@ -627,7 +751,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
                 try {
                     String response = body.body().string();
                     String adName, adDate, todayDate;
-                    String adGroupApi="";
+                    String adGroupApi = "";
 
                     Log.d("TAG:WEB:SCHEDULER", "onSuccess scheduler: " + response);
 
@@ -643,11 +767,9 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
                     Log.d("TAG", " DATE: " + formattedDate);
 
 
-
                     JSONArray jsonArray = schedule.getJSONArray("roundRobin");
 
-                    if(newURLlist.size() >0)
-                    {
+                    if (newURLlist.size() > 0) {
                         newURLlist.clear();
                     }
 
@@ -659,7 +781,7 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
                             //Log.d("TAG", " roundRobin: " + roundRobin);
 
                             String iteration = roundRobin.getString("iteration");
-                             adGroupApi = roundRobin.getString("adGroup");
+                            adGroupApi = roundRobin.getString("adGroup");
                             adName = roundRobin.getString("adName");
 
 
@@ -757,7 +879,8 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 
                                                 } else {
 
-                                                    Log.d("TAG::arrayindex else", ":)");webview.loadUrl(newURLlist.get(arrayIndex).getAdname());//5-11-22
+                                                    Log.d("TAG::arrayindex else", ":)");
+                                                    webview.loadUrl(newURLlist.get(arrayIndex).getAdname());//5-11-22
                                                     list.add(0, dateString);
                                                     list.add(1, finalAdGroupApi);
                                                     list.add(2, newURLlist.get(arrayIndex).getAdname());//adName
@@ -778,10 +901,27 @@ public class WebsiteActivity extends AppCompatActivity implements ActivityCompat
 
                                     }
                                 }, 30000, true);
+                            } else {
+
+
+                                webview.setVisibility(View.GONE);
+                                imgScreenSaver.setVisibility(View.VISIBLE);
+
+                                if (screensaver.contains("@drawable/img_ss")) {
+
+                                    Glide.with(WebsiteActivity.this).load(getImage("img_ss")).into(imgScreenSaver);
+
+                                } else {
+
+                                    String path = "https://intelisa.s3.ap-south-1.amazonaws.com/" + ownedby + "/ads/" + screensaver;
+                                    Glide.with(WebsiteActivity.this).load(path).into(imgScreenSaver);
+
+                                }
+
+
                             }
 
-                        }
-                        else {
+                        } else {
 
 
                             webview.setVisibility(View.GONE);
